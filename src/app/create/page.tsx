@@ -5,6 +5,7 @@ import { H1 } from "@/components/typography/H1";
 import { Button } from "@/components/ui/button";
 import {
   FormControl,
+  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -17,9 +18,11 @@ import { FormProvider, useForm } from "react-hook-form";
 import { z } from "zod";
 
 const formSchema = z.object({
-  name: z.string(),
-  email: z.string().email(),
-  inquirySource: z.string(),
+  name: z.string().nonempty({ message: "Please enter your name" }),
+  email: z
+    .string()
+    .email({ message: "Please enter a valid email" })
+    .nonempty({ message: "Please enter your email" }),
 });
 
 type FormType = z.infer<typeof formSchema>;
@@ -31,13 +34,18 @@ export default function CreateLeadPage() {
     resolver: zodResolver(formSchema),
     defaultValues: {
       email: "",
-      inquirySource: "Google",
       name: "",
     },
   });
-  const { handleSubmit, control } = form;
+  const {
+    handleSubmit,
+    control,
+    formState: { errors },
+  } = form;
 
-  function onSubmit(values: FormType) {}
+  function onSubmit(values: FormType) {
+    setActiveStep(2);
+  }
 
   return (
     <MainLayout className="items-start px-8 ">
@@ -50,7 +58,7 @@ export default function CreateLeadPage() {
         <form
           onSubmit={handleSubmit(onSubmit)}
           className={`w-full flex flex-col gap-6 ${
-            activeStep == 1 ? "" : "display-none"
+            activeStep == 1 ? "" : "hidden"
           }`}
         >
           <FormField
@@ -62,6 +70,7 @@ export default function CreateLeadPage() {
                 <FormControl>
                   <Input placeholder="enter your name ..." {...field} />
                 </FormControl>
+                <FormDescription>{errors.name?.message ?? ""}</FormDescription>
               </FormItem>
             )}
           />
@@ -75,19 +84,18 @@ export default function CreateLeadPage() {
                 <FormControl>
                   <Input placeholder="enter your email ..." {...field} />
                 </FormControl>
+                <FormDescription>{errors.email?.message ?? ""}</FormDescription>
               </FormItem>
             )}
           />
 
-          <Button
-            type="button"
-            className="w-full"
-            onClick={() => setActiveStep(2)}
-          >
+          <Button type="submit" className="w-full">
             Next Step
           </Button>
         </form>
       </FormProvider>
+
+      <div className={`${activeStep == 2 ? "" : "hidden"}`}></div>
     </MainLayout>
   );
 }
