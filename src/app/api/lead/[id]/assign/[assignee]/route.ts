@@ -1,4 +1,5 @@
 import prisma from "@/lib/prisma";
+import { PrismaClientKnownRequestError } from "@prisma/client/runtime/library";
 
 export async function PUT(
   req: Request,
@@ -25,7 +26,11 @@ export async function PUT(
 
     return new Response("success", { status: 200 });
   } catch (error) {
-    console.error(error);
-    return new Response("error", { status: 400 });
+    if (error instanceof PrismaClientKnownRequestError) {
+      return new Response("error", { status: 400 });
+    } else {
+      console.error(error);
+      return new Response("server-err", { status: 500 });
+    }
   }
 }
