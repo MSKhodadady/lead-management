@@ -4,6 +4,7 @@ import { leadCreateSchema } from "@/lib/validation/lead";
 export async function GET(req: Request) {
   const res = await prisma.lead.findMany({
     select: {
+      id: true,
       email: true,
       name: true,
       inquiry: true,
@@ -14,8 +15,16 @@ export async function GET(req: Request) {
       },
     },
   });
+  const output = res.map((l) => {
+    const { SalePerson, ...other } = l;
 
-  return Response.json(res);
+    return {
+      ...other,
+      salesPerson: SalePerson?.name ?? null,
+    };
+  });
+
+  return Response.json(output);
 }
 
 export async function POST(req: Request) {
