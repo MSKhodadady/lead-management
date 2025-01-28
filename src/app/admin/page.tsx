@@ -25,6 +25,10 @@ import { Check } from "lucide-react";
 export default function AdminPage() {
   const { toast } = useToast();
   const qClient = useQueryClient();
+
+  /**
+   * query for reading leads.
+   */
   const leads = useQuery({
     queryKey: ["lead-list"],
     queryFn: async () => {
@@ -33,6 +37,9 @@ export default function AdminPage() {
     },
   });
 
+  /**
+   * query for reading sale persons.
+   */
   const salePersons = useQuery({
     queryKey: ["sale-persons"],
     queryFn: async () => {
@@ -42,6 +49,9 @@ export default function AdminPage() {
     },
   });
 
+  /**
+   * mutation for assigning a lead to a sale person.
+   */
   const chooseSalePerson = useMutation({
     mutationFn: async (P: { leadId: number; salePersonId: number }) => {
       const { leadId, salePersonId } = P;
@@ -72,8 +82,8 @@ export default function AdminPage() {
           <TableRow>
             <TableHead>Name</TableHead>
             <TableHead>Email</TableHead>
-            <TableHead>Inquiry</TableHead>
-            <TableHead>Assignee</TableHead>
+            <TableHead>Source</TableHead>
+            <TableHead>Assigned Salesperson</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>

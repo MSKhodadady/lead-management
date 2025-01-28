@@ -1,6 +1,9 @@
 import prisma from "@/lib/prisma";
 import { leadCreateSchema } from "@/lib/validation/lead";
 
+/**
+ * @returns list of leads
+ */
 export async function GET() {
   const res = await prisma.lead.findMany({
     select: {
@@ -29,6 +32,10 @@ export async function GET() {
   return Response.json(output);
 }
 
+/**
+ * Create a new lead.
+ * @param req with body of type `LeadForm`
+ */
 export async function POST(req: Request) {
   const body = await req.json();
 

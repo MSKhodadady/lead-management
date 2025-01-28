@@ -1,6 +1,10 @@
 import prisma from "@/lib/prisma";
 import { PrismaClientKnownRequestError } from "@prisma/client/runtime/library";
 
+/**
+ * Handles PUT requests to update a lead with a new assignee.
+ * @param params - The route parameters, containing the `id` of the lead and the `assignee` of the sale person.
+ */
 export async function PUT(
   req: Request,
   { params }: { params: Promise<{ id: string; assignee: string }> }
