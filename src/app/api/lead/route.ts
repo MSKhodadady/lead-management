@@ -1,7 +1,7 @@
 import prisma from "@/lib/prisma";
 import { leadCreateSchema } from "@/lib/validation/lead";
 
-export async function GET(req: Request) {
+export async function GET() {
   const res = await prisma.lead.findMany({
     select: {
       id: true,
@@ -35,7 +35,7 @@ export async function POST(req: Request) {
   const validate = leadCreateSchema.safeParse(body);
 
   if (validate.success) {
-    const res = await prisma.lead.create({
+    await prisma.lead.create({
       data: validate.data,
     });
 

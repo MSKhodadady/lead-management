@@ -43,7 +43,7 @@ export default function CreateLeadPage() {
     },
   });
 
-  function onSubmit(values: LeadFormNE) {
+  function onSubmit() {
     setActiveStep(2);
   }
 
