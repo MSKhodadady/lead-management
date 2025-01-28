@@ -11,16 +11,18 @@ export async function GET(req: Request) {
       SalePerson: {
         select: {
           name: true,
+          id: true,
         },
       },
     },
   });
-  const output = res.map((l) => {
+  const output: LeadItem[] = res.map((l) => {
     const { SalePerson, ...other } = l;
 
     return {
       ...other,
-      salesPerson: SalePerson?.name ?? null,
+      salePerson: SalePerson?.name ?? null,
+      salePersonId: SalePerson?.id ?? null,
     };
   });
 

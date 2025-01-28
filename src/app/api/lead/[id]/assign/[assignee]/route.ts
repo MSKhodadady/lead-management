@@ -14,7 +14,7 @@ export async function PUT(
   }
 
   try {
-    const res = await prisma.lead.update({
+    await prisma.lead.update({
       where: {
         id: idN,
       },

@@ -2,7 +2,6 @@
 
 import { MainLayout } from "@/components/layout/Main";
 import { H1 } from "@/components/typography/H1";
-import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -17,11 +16,15 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { useToast } from "@/hooks/use-toast";
 import { SalePerson } from "@prisma/client";
 
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { Check } from "lucide-react";
 
 export default function AdminPage() {
+  const { toast } = useToast();
+  const qClient = useQueryClient();
   const leads = useQuery({
     queryKey: ["lead-list"],
     queryFn: async () => {
@@ -39,6 +42,27 @@ export default function AdminPage() {
     },
   });
 
+  const chooseSalePerson = useMutation({
+    mutationFn: async (P: { leadId: number; salePersonId: number }) => {
+      const { leadId, salePersonId } = P;
+
+      try {
+        const res = await fetch(`/api/lead/${leadId}/assign/${salePersonId}`, {
+          method: "PUT",
+        });
+        if (res.ok) {
+          toast({ title: "Change successfully!" });
+          qClient.invalidateQueries({ queryKey: ["lead-list"] });
+        } else {
+          toast({ title: "Server Err" });
+        }
+      } catch (error) {
+        console.error(error);
+        toast({ title: "Server Err" });
+      }
+    },
+  });
+
   return (
     <MainLayout>
       <title>Admin</title>
@@ -53,25 +77,42 @@ export default function AdminPage() {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {leads.data?.map(({ id, name, email, inquiry, salesPerson }) => (
-            <TableRow key={id}>
-              <TableCell>{name}</TableCell>
-              <TableCell>{email}</TableCell>
-              <TableCell>{inquiry}</TableCell>
-              <TableCell>
-                <DropdownMenu>
-                  <DropdownMenuTrigger>
-                    <Button variant="outline">{salesPerson ?? ""}</Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent>
-                    {salePersons.data?.map((i) => (
-                      <DropdownMenuItem key={i.id}>{i.name}</DropdownMenuItem>
-                    ))}
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </TableCell>
-            </TableRow>
-          ))}
+          {leads.data?.map(
+            ({ id, name, email, inquiry, salePerson, salePersonId }) => (
+              <TableRow key={id}>
+                <TableCell>{name}</TableCell>
+                <TableCell>{email}</TableCell>
+                <TableCell>{inquiry}</TableCell>
+                <TableCell>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger>
+                      {salePerson ? (
+                        salePerson
+                      ) : (
+                        <span className="italic text-gray-400">No One</span>
+                      )}
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent>
+                      {salePersons.data?.map((i) => (
+                        <DropdownMenuItem
+                          key={i.id}
+                          className="flex justify-between"
+                          onClick={() =>
+                            chooseSalePerson.mutate({
+                              leadId: id,
+                              salePersonId: i.id,
+                            })
+                          }
+                        >
+                          {i.name} {i.id == salePersonId ? <Check /> : <></>}
+                        </DropdownMenuItem>
+                      ))}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </TableCell>
+              </TableRow>
+            )
+          )}
         </TableBody>
       </Table>
     </MainLayout>
