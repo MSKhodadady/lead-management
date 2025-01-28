@@ -14,52 +14,41 @@ import {
 import { Input } from "@/components/ui/input";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Stepper } from "@/components/ui/Stepper";
+import {
+  inquiryOptions,
+  LeadFormInquiry,
+  leadFormInquirySchema,
+  LeadFormNE,
+  leadFormNESchema,
+} from "@/lib/validation/lead";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 import { useState } from "react";
 import { FormProvider, useForm } from "react-hook-form";
-import { z } from "zod";
-
-//: name and email form
-const formSchema = z.object({
-  name: z.string().nonempty({ message: "Please enter your name" }),
-  email: z
-    .string()
-    .email({ message: "Please enter a valid email" })
-    .nonempty({ message: "Please enter your email" }),
-});
-type FormType = z.infer<typeof formSchema>;
-
-//: inquiry form
-const inquiryOptions = ["Google", "Social Media", "Friends"] as const;
-const inquiryFormSchema = z.object({
-  inquiry: z.enum(inquiryOptions),
-});
-type InquiryForm = z.infer<typeof inquiryFormSchema>;
 
 export default function CreateLeadPage() {
   const [activeStep, setActiveStep] = useState(1);
 
-  const form = useForm<FormType>({
-    resolver: zodResolver(formSchema),
+  const form = useForm<LeadFormNE>({
+    resolver: zodResolver(leadFormNESchema),
     defaultValues: {
       email: "",
       name: "",
     },
   });
 
-  function onSubmit(values: FormType) {
+  function onSubmit(values: LeadFormNE) {
     setActiveStep(2);
   }
 
-  const inqForm = useForm<InquiryForm>({
-    resolver: zodResolver(inquiryFormSchema),
+  const inqForm = useForm<LeadFormInquiry>({
+    resolver: zodResolver(leadFormInquirySchema),
     defaultValues: {
       inquiry: "Google",
     },
   });
 
-  function onSubmitInquiry(v: InquiryForm) {
+  function onSubmitInquiry(v: LeadFormInquiry) {
     setActiveStep(3);
   }
 
