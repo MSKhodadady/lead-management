@@ -9,14 +9,18 @@ import {
   FormField,
   FormItem,
   FormLabel,
+  FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Stepper } from "@/components/ui/Stepper";
 import { zodResolver } from "@hookform/resolvers/zod";
+
 import { useState } from "react";
 import { FormProvider, useForm } from "react-hook-form";
 import { z } from "zod";
 
+//: name and email form
 const formSchema = z.object({
   name: z.string().nonempty({ message: "Please enter your name" }),
   email: z
@@ -24,8 +28,14 @@ const formSchema = z.object({
     .email({ message: "Please enter a valid email" })
     .nonempty({ message: "Please enter your email" }),
 });
-
 type FormType = z.infer<typeof formSchema>;
+
+//: inquiry form
+const inquiryOptions = ["Google", "Social Media", "Friends"] as const;
+const inquiryFormSchema = z.object({
+  inquiry: z.enum(inquiryOptions),
+});
+type InquiryForm = z.infer<typeof inquiryFormSchema>;
 
 export default function CreateLeadPage() {
   const [activeStep, setActiveStep] = useState(1);
@@ -37,14 +47,20 @@ export default function CreateLeadPage() {
       name: "",
     },
   });
-  const {
-    handleSubmit,
-    control,
-    formState: { errors },
-  } = form;
 
   function onSubmit(values: FormType) {
     setActiveStep(2);
+  }
+
+  const inqForm = useForm<InquiryForm>({
+    resolver: zodResolver(inquiryFormSchema),
+    defaultValues: {
+      inquiry: "Google",
+    },
+  });
+
+  function onSubmitInquiry(v: InquiryForm) {
+    setActiveStep(3);
   }
 
   return (
@@ -54,15 +70,16 @@ export default function CreateLeadPage() {
 
       <Stepper steps={["1", "2", "3"]} active={activeStep} />
 
+      {/* step 1 */}
       <FormProvider {...form}>
         <form
-          onSubmit={handleSubmit(onSubmit)}
+          onSubmit={form.handleSubmit(onSubmit)}
           className={`w-full flex flex-col gap-6 ${
             activeStep == 1 ? "" : "hidden"
           }`}
         >
           <FormField
-            control={control}
+            control={form.control}
             name="name"
             render={({ field }) => (
               <FormItem>
@@ -70,13 +87,15 @@ export default function CreateLeadPage() {
                 <FormControl>
                   <Input placeholder="enter your name ..." {...field} />
                 </FormControl>
-                <FormDescription>{errors.name?.message ?? ""}</FormDescription>
+                <FormDescription>
+                  {form.formState.errors.name?.message ?? ""}
+                </FormDescription>
               </FormItem>
             )}
           />
 
           <FormField
-            control={control}
+            control={form.control}
             name="email"
             render={({ field }) => (
               <FormItem>
@@ -84,7 +103,9 @@ export default function CreateLeadPage() {
                 <FormControl>
                   <Input placeholder="enter your email ..." {...field} />
                 </FormControl>
-                <FormDescription>{errors.email?.message ?? ""}</FormDescription>
+                <FormDescription>
+                  {form.formState.errors.email?.message ?? ""}
+                </FormDescription>
               </FormItem>
             )}
           />
@@ -95,7 +116,54 @@ export default function CreateLeadPage() {
         </form>
       </FormProvider>
 
-      <div className={`${activeStep == 2 ? "" : "hidden"}`}></div>
+      {/* step 2 */}
+
+      <FormProvider {...inqForm}>
+        <form
+          onSubmit={inqForm.handleSubmit(onSubmitInquiry)}
+          className={`w-full ${activeStep == 2 ? "" : "hidden"}`}
+        >
+          <FormField
+            control={inqForm.control}
+            name="inquiry"
+            render={({ field }) => (
+              <FormItem className="mb-8">
+                <FormLabel>Inquiry Source:</FormLabel>
+                <FormControl>
+                  <RadioGroup
+                    onValueChange={field.onChange}
+                    defaultValue={field.value}
+                    className="gap-3 "
+                  >
+                    {inquiryOptions.map((option) => (
+                      <FormItem className="flex items-center gap-2 space-y-0">
+                        <FormControl>
+                          <RadioGroupItem value={option} />
+                        </FormControl>
+                        <FormLabel className="font-normal">{option}</FormLabel>
+                      </FormItem>
+                    ))}
+                  </RadioGroup>
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <div className="flex items-stretch gap-3">
+            <Button
+              type="button"
+              onClick={() => setActiveStep(1)}
+              className="w-full"
+              variant="secondary"
+            >
+              Pre Step
+            </Button>
+            <Button type="submit" className="w-full font-bold text-lg">
+              Submit
+            </Button>
+          </div>
+        </form>
+      </FormProvider>
     </MainLayout>
   );
 }
